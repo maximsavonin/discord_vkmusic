@@ -59,4 +59,21 @@ async def stop(ctx):
         await ctx.voice_client.disconnect()
         await ctx.send("⏹️ Музыка остановлена")
 
+@bot.command()
+async def join(ctx):
+    if ctx.author.voice:
+        channel = ctx.author.voice.channel
+        await channel.connect()
+        await ctx.send(f"Подключился к {channel.name}")
+    else:
+        await ctx.send("Вы не в голосовом канале!")
+
+@bot.command()
+async def leave(ctx):
+    if ctx.voice_client:
+        await ctx.voice_client.disconnect()
+        await ctx.send("Отключился от голосового канала")
+    else:
+        await ctx.send("Я не в голосовом канале!")
+
 bot.run(TOKEN)
