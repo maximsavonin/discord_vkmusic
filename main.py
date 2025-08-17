@@ -8,6 +8,9 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
+intents.message_content = True  # чтобы бот видел команды в чатах
+intents.voice_states = True     # чтобы бот видел, кто в голосовом канале
+
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 YDL_OPTIONS = {'format': 'bestaudio/best', 'quiet': True}
