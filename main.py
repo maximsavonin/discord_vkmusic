@@ -3,6 +3,7 @@ from discord.ext import commands
 import os
 from dotenv import load_dotenv
 import vk_api
+import re
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -51,22 +52,19 @@ async def play_vk_track(ctx, vk_url):
 
     # Получаем прямую ссылку на аудио через VK API
     try:
-        audio_list = vk.audio.search(q=vk_url, count=1)
-        if not audio_list['items']:
-            await ctx.send("Не удалось найти трек в VK")
-            return
-        audio = audio_list['items'][0]
-        audio_url = audio['url']
-        title = audio['artist'] + " - " + audio['title']
+        match = re.search(r'audio(-?\d+)_(-?\d+)', vk_url)
+        owner_id, audio_id = match.groups()
+        audio = vk.audio.getById(audios=f"{owner_id}_{audio_id}")[0]
+        url = audio['url']
     except Exception as e:
         await ctx.send(f"Ошибка при получении трека из VK: {e}")
         return
 
     # Проигрываем через FFmpeg
     if not voice.is_playing():
-        source = await discord.FFmpegOpusAudio.from_probe(audio_url, **FFMPEG_OPTIONS)
+        source = await discord.FFmpegOpusAudio.from_probe(url, **FFMPEG_OPTIONS)
         voice.play(source, after=lambda e: print(f"Ошибка: {e}") if e else None)
-        await ctx.send(f"▶️ Играет: {title}")
+        await ctx.send(f"▶️ Играет: {audio.get('title', 'VK-трек')}")
     else:
         await ctx.send("Сейчас уже играет музыка! Останови её командой !stop")
 
